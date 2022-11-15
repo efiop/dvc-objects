@@ -1,10 +1,13 @@
 import itertools
 import logging
+import threading
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import suppress
 from functools import partial
 from io import BytesIO
 from typing import TYPE_CHECKING, BinaryIO, Optional, Tuple, Union, cast
+
+from funcy import wrap_with
 
 from .errors import ObjectDBPermissionError
 from .obj import Object
@@ -44,6 +47,7 @@ class ObjectDB:
     def __hash__(self):
         return hash((self.fs.protocol, self.path))
 
+    @wrap_with(threading.Lock())
     def _init(self, dname: str) -> None:
         if self.read_only:
             return
